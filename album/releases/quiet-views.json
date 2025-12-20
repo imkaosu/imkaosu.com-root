@@ -1,0 +1,17 @@
+{
+  "title": "quiet views",
+  "artists": ["kaosu"],
+  "coverUrl": "https://cdn.kaosu.xyz/albums/covers/quiet-views.jpg",
+  "releaseDate": "2025-12-20T00:00:00Z",
+  "released": false,
+  "accentColor": "#b32a20",
+  "tracks": [
+    { "title": "till i let go" },
+    { "title": "every step" }
+  ],
+  "links": {
+    "spotify": "https://open.spotify.com/album/...",
+    "appleMusic": "https://music.apple.com/...",
+    "youtubeMusic": "https://music.youtube.com/..."
+  }
+}

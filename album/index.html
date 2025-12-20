@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Album Release</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #000;
+      color: #fff;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    #glow-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem;
+      display: none;
+    }
+
+    #intro-screen {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #000;
+      z-index: 10;
+      transition: opacity 0.4s ease;
+    }
+
+    #continue-btn {
+      padding: 1rem 3rem;
+      font-size: 1.3rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 50px;
+      background: var(--accent-color, #c00);
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+    }
+
+    #continue-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.6);
+    }
+
+    #continue-btn:active {
+      transform: scale(0.98);
+    }
+
+    .card {
+      background: rgba(30, 30, 30, 0.3);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 16px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .card-header {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .album-cover {
+      width: 180px;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 12px;
+      margin: 0 auto 1.2rem;
+      display: block;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+    }
+
+    .album-title {
+      font-size: 2.2rem;
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(90deg, #fff, #ccc);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .album-meta {
+      display: flex;
+      justify-content: center;
+      gap: 1.2rem;
+      font-size: 1rem;
+      color: #aaa;
+      margin-top: 0.5rem;
+    }
+
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .track-list {
+      list-style: none;
+    }
+
+    .track-item {
+      display: flex;
+      align-items: center;
+      padding: 1rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .track-item:last-child {
+      border-bottom: none;
+    }
+
+    .track-number {
+      width: 2.2rem;
+      height: 2.2rem;
+      border-radius: 50%;
+      background: var(--accent-color, #c00);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      margin-right: 1rem;
+      flex-shrink: 0;
+    }
+
+    .track-info {
+      flex: 1;
+    }
+
+    .track-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .track-controls {
+      display: flex;
+      gap: 0.6rem;
+    }
+
+    .control-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.08);
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .control-btn:hover {
+      background: var(--accent-color, #c00);
+      transform: scale(1.1);
+    }
+
+    .links {
+      text-align: center;
+      margin-top: 2rem;
+    }
+
+    .link-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 1.2rem;
+      margin: 0 0.4rem;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.07);
+      color: #fff;
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .link-btn:hover {
+      background: var(--accent-color, #c00);
+    }
+
+    .error {
+      text-align: center;
+      padding: 5rem 2rem;
+      font-size: 1.4rem;
+      color: #f97777;
+    }
+
+    @media (max-width: 600px) {
+      .container { padding: 1.2rem; }
+      .album-cover { width: 140px; height: 140px; }
+      .album-title { font-size: 1.8rem; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="glow-canvas"></canvas>
+
+  <div id="intro-screen">
+    <button id="continue-btn">Continue</button>
+  </div>
+
+  <div class="container" id="main-content">
+    <div class="card" id="album-card">
+      <div class="card-header">
+        <img id="album-cover" class="album-cover" src="" alt="Album Cover"/>
+        <h1 id="album-title" class="album-title"></h1>
+        <div class="album-meta">
+          <div class="meta-item">
+            <i class="fas fa-calendar-alt"></i>
+            <span id="release-date"></span>
+          </div>
+          <div class="meta-item" id="artist-meta">
+            <i class="fas fa-music"></i>
+            <span id="artist-names"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="tracks-card">
+      <h2 style="margin-bottom: 1.2rem; font-size: 1.5rem;">Tracks</h2>
+      <ul class="track-list" id="track-list"></ul>
+    </div>
+
+    <div class="links" id="streaming-links"></div>
+  </div>
+
+  <script>
+    const RELEASES_BASE_URL = 'releases/';
+
+    const introScreen = document.getElementById('intro-screen');
+    const continueBtn = document.getElementById('continue-btn');
+    const container = document.getElementById('main-content');
+    const albumCoverEl = document.getElementById('album-cover');
+    const albumTitleEl = document.getElementById('album-title');
+    const releaseDateEl = document.getElementById('release-date');
+    const artistNamesEl = document.getElementById('artist-names');
+    const trackListEl = document.getElementById('track-list');
+    const streamingLinksEl = document.getElementById('streaming-links');
+    const artistMetaEl = document.getElementById('artist-meta');
+
+    const canvas = document.getElementById('glow-canvas');
+    const ctx = canvas.getContext('2d');
+    let mouseX = -100, mouseY = -100;
+    let accentColor = '#c00';
+
+    function updateCanvasSize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+
+    window.addEventListener('resize', updateCanvasSize);
+    updateCanvasSize();
+
+    canvas.addEventListener('mousemove', (e) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+    });
+
+    function animateGlow() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      if (mouseX >= 0 && mouseY >= 0) {
+        const gradient = ctx.createRadialGradient(
+          mouseX, mouseY, 0,
+          mouseX, mouseY, 300
+        );
+        gradient.addColorStop(0, accentColor + '40');
+        gradient.addColorStop(1, '#00000000');
+
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
+
+      requestAnimationFrame(animateGlow);
+    }
+
+    animateGlow();
+
+    continueBtn.addEventListener('click', () => {
+      introScreen.style.opacity = '0';
+      setTimeout(() => {
+        introScreen.style.display = 'none';
+        container.style.display = 'block';
+      }, 400);
+    });
+
+    async function loadRelease(id) {
+      if (!id) {
+        showError();
+        return;
+      }
+
+      try {
+        const res = await fetch(`${RELEASES_BASE_URL}${id}.json`);
+        if (!res.ok) throw new Error('Release not found');
+        const data = await res.json();
+        renderRelease(data);
+      } catch (err) {
+        console.error(err);
+        showError();
+      }
+    }
+
+    function showError() {
+      container.innerHTML = `<div class="error">Release not found.</div>`;
+      container.style.display = 'block';
+      introScreen.style.display = 'none';
+    }
+
+    function renderRelease(data) {
+      accentColor = data.accentColor || '#c00';
+      document.documentElement.style.setProperty('--accent-color', accentColor);
+      continueBtn.style.backgroundColor = accentColor;
+
+      albumCoverEl.src = data.coverUrl || 'https://via.placeholder.com/400?text=No+Cover';
+      albumTitleEl.textContent = data.title || 'Untitled';
+      artistNamesEl.textContent = Array.isArray(data.artists) 
+        ? data.artists.join(', ') 
+        : data.artists || 'Unknown Artist';
+
+      if (data.released) {
+        releaseDateEl.textContent = 'Released!';
+      } else {
+        const date = new Date(data.releaseDate);
+        releaseDateEl.textContent = date.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric'
+        });
+      }
+
+      artistMetaEl.style.display = (data.artists && data.artists.length > 0) ? 'flex' : 'none';
+
+      trackListEl.innerHTML = '';
+      (data.tracks || []).forEach((track, i) => {
+        const li = document.createElement('li');
+        li.className = 'track-item';
+        li.innerHTML = `
+          <div class="track-number">${i + 1}</div>
+          <div class="track-info">
+            <div class="track-title">${track.title || 'Untitled Track'}</div>
+          </div>
+          <div class="track-controls">
+            <button class="control-btn" title="Play"><i class="fas fa-play"></i></button>
+            <button class="control-btn" title="Pause"><i class="fas fa-pause"></i></button>
+            <button class="control-btn" title="Mute"><i class="fas fa-volume-mute"></i></button>
+          </div>
+        `;
+        trackListEl.appendChild(li);
+      });
+
+      streamingLinksEl.innerHTML = '';
+      if (data.released && data.links) {
+        const platforms = [
+          { key: 'spotify', name: 'Spotify', icon: 'fab fa-spotify' },
+          { key: 'appleMusic', name: 'Apple Music', icon: 'fab fa-apple' },
+          { key: 'youtubeMusic', name: 'YouTube Music', icon: 'fab fa-youtube' }
+        ];
+
+        platforms.forEach(p => {
+          if (data.links[p.key]) {
+            const a = document.createElement('a');
+            a.href = data.links[p.key];
+            a.target = '_blank';
+            a.className = 'link-btn';
+            a.innerHTML = `<i class="${p.icon}"></i> ${p.name}`;
+            streamingLinksEl.appendChild(a);
+          }
+        });
+      }
+
+      introScreen.style.opacity = '0';
+      setTimeout(() => {
+        introScreen.style.display = 'none';
+        container.style.display = 'block';
+      }, 400);
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const releaseId = urlParams.get('i');
+    if (releaseId) {
+      loadRelease(releaseId);
+    } else {
+      showError();
+    }
+  </script>
+</body>
+</html>
