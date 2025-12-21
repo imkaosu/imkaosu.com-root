@@ -2,8 +2,8 @@
   "title": "quiet views",
   "artists": ["kaosu"],
   "coverUrl": "https://imkaosu.com/album/covers/quiet-views.jpg",
-  "releaseDate": "2025-12-20T12:00:00Z",
-  "released": false,
+  "releaseDate": "2025-12-20T21:00:00Z",
+  "released": true,
   "accentColor": "#b32a20",
   "tracks": [
     {
@@ -16,8 +16,9 @@
     }
   ],
   "links": {
-    "spotify": "https://open.spotify.com/album/...",
-    "appleMusic": "https://music.apple.com/...",
-    "youtubeMusic": "https://music.youtube.com/..."
+    "spotify": "https://open.spotify.com/album/67xubjAXG7gxRmsWHp1vFC?si=m1313ed3QfqqGH20urEYZA",
+    "appleMusic": "https://imkaosu.com/album/redirects/quiet-views/am.html",
+    "youtubeMusic": "https://youtube.com/playlist?list=OLAK5uy_mQNojndCfGXAh37r5rVtkJj3nd4H6vzFc&si=juJo1fKUyzaeck4T"
   }
+
 }
